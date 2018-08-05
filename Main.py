@@ -8,7 +8,9 @@ import os
 import copy
 
 #depth meter, if too slow, pull down it
-depth = 1
+depth = 3
+#time limit, if too slow, pull down it
+time_limit = 60
 
 #define function
 def parse_uci(uci): # chess-movement
@@ -124,7 +126,7 @@ while True:
             board = chess.Board()
             while True:
                 if not board.is_checkmate():
-                    ab = alpha_beta(depth, -99999, 99999, True, weight_list[i], 60)
+                    ab = alpha_beta(depth, -99999, 99999, True, weight_list[i], time_limit/2)
                     board.push(ab[1])
                     print('Turn', k, ': WHITE')
                     print(board)
@@ -135,7 +137,7 @@ while True:
                     result[i] += 1
                     break
                 if not board.is_checkmate():
-                    ab = alpha_beta(depth, -99999, 99999, True, weight_list[j], 60)
+                    ab = alpha_beta(depth, -99999, 99999, True, weight_list[j], time_limit/2)
                     board.push(ab[1])
                     print('Turn', k, ': BLACK')
                     print(board)
