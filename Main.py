@@ -8,9 +8,11 @@ import os
 import copy
 
 #depth meter, if too slow, pull down it
-depth = 3
+depth = 1
 #time limit, if too slow, pull down it
 time_limit = 60
+
+
 
 #define function
 def parse_uci(uci): # chess-movement
@@ -114,112 +116,164 @@ num = int(weight_list[-1][0])
 weight_list.pop()
 
 while True:
-    
-    result = list()
-    for i in range(len(weight_list)):
-        result.append(0)
-    print('generation', num)
-    
-    for i in range(len(weight_list)):
-        for j in range(i + 1, len(weight_list)):
-            k = 1
-            board = chess.Board()
-            while True:
-                if not board.is_checkmate():
-                    ab = alpha_beta(depth, -99999, 99999, True, weight_list[i], time_limit/2)
-                    board.push(ab[1])
-                    print('Turn', k, ': WHITE')
-                    print(board)
-                    print(ab[0])
-                    print()
-                else:
-                    print("player", i + 1,  "won")
-                    result[i] += 1
-                    break
-                if not board.is_checkmate():
-                    ab = alpha_beta(depth, -99999, 99999, True, weight_list[j], time_limit/2)
-                    board.push(ab[1])
-                    print('Turn', k, ': BLACK')
-                    print(board)
-                    print(ab[0])
-                    print()
-                else:
-                    print("player", j + 1, "won")
-                    result[j] += 1
-                    break
-                k = k + 1
-                if board.is_variant_draw() or k >= 100:
-                    print('draw.')
-                    break
-    print('result')
-    for i in range(len(result)):
-        print('Com', i, ':', result[i])
-                    
-    #cross
-    cross = random.randint(0,4)
-    fir = 0
-    sec = 0
-    last = 0
-    least = 0
-    for i in range(len(result)):
-        if result[i] == max(result):
-            fir = i
-            result[i] = 0
-            break
-    for i in range(len(result)):
-        if result[i] == max(result):
-            sec = i
-            break
-    result[fir] = 15
-    for i in range(len(result)):
-        if result[i] == min(result):
-            last = i
-            result[i] = 15
-            break
-    for i in range(len(result)):
-        if result[i] == min(result):
-            least = i
-            break
-
-    weight_list[last] = copy.deepcopy(weight_list[fir])
-    weight_list[least] = copy.deepcopy(weight_list[sec])
-    
-    if cross != 4:
-        print('Cross : Y')
-        for i in range(cross, 4):
-            tmp = weight_list[last][i + 1]
-            weight_list[last][i + 1] = weight_list[least][i + 1]
-            weight_list[least][i + 1] = tmp
-    else:
-        print('Cross : N')
-        
-    #mutate
-    whether_mutate = bool(random.randint(0,1))
-    mut_pos = random.randint(0,4)
-    mut_num = random.randint(0,len(weight_list) - 1)
-    if whether_mutate:
-        weight_list[mut_num][mut_pos] = random.randint(1, 9999)
-        print('Mutate : Y')
-    else:
-        print('Mutate : N')
-
-    #write
-    f = open('weightlist.txt', 'w')
-    for i in range(len(weight_list)):
-        print('Com', i + 1, ':', weight_list[i])
-        for j in weight_list[i]:
-            f.write(str(j))
-            f.write(' ')
-        f.write('\n')
-    num += 1
-    f.write(str(num))
-    f.close()
-
-    #next gen?
-    while True:
-        next = input('Move to next generation?(y/n) : ')
-        if next == 'y' or next == 'n':
-            break
-    if next == 'n':
+    mode = input("select mode\n1.Self Evolution\n2.PvE\n")
+    if mode == '1' or mode == '2':
         break
+
+if mode == '1':#Self Evolution
+    while True:
+        result = list()
+        for i in range(len(weight_list)):
+            result.append(0)
+        print('generation', num)
+    
+        for i in range(len(weight_list)):
+            for j in range(i + 1, len(weight_list)):
+                k = 1
+                board = chess.Board()
+                while True:
+                    if not board.is_checkmate():
+                        ab = alpha_beta(depth, -99999, 99999, True, weight_list[i], time_limit/2)
+                        board.push(ab[1])
+                        print('Turn', k, ': WHITE')
+                        print(board)
+                        print(ab[0])
+                        print()
+                    else:
+                        print("Com", j + 1,  "won")
+                        result[j] += 1
+                        break
+                    if not board.is_checkmate():
+                        ab = alpha_beta(depth, -99999, 99999, True, weight_list[j], time_limit/2)
+                        board.push(ab[1])
+                        print('Turn', k, ': BLACK')
+                        print(board)
+                        print(ab[0])
+                        print()
+                    else:
+                        print("Com", i + 1, "won")
+                        result[i] += 1
+                        break
+                    k = k + 1
+                    if board.is_variant_draw() or k >= 100:
+                        print('draw.')
+                        break
+        print('result')
+        for i in range(len(result)):
+            print('Com', i, ':', result[i])
+                    
+        #cross
+        cross = random.randint(0,4)
+        fir = 0
+        sec = 0
+        last = 0
+        least = 0
+        for i in range(len(result)):
+            if result[i] == max(result):
+                fir = i
+                result[i] = 0
+                break
+        for i in range(len(result)):
+            if result[i] == max(result):
+                sec = i
+                break
+        result[fir] = 15
+        for i in range(len(result)):
+            if result[i] == min(result):
+                last = i
+                result[i] = 15
+                break
+        for i in range(len(result)):
+            if result[i] == min(result):
+                least = i
+                break
+
+        weight_list[last] = copy.deepcopy(weight_list[fir])
+        weight_list[least] = copy.deepcopy(weight_list[sec])
+    
+        if cross != 4:
+            print('Cross : Y')
+            for i in range(cross, 4):
+                tmp = weight_list[last][i + 1]
+                weight_list[last][i + 1] = weight_list[least][i + 1]
+                weight_list[least][i + 1] = tmp
+        else:
+            print('Cross : N')
+        
+        #mutate
+        whether_mutate = bool(random.randint(0,1))
+        mut_pos = random.randint(0,4)
+        mut_num = random.randint(0,len(weight_list) - 1)
+        if whether_mutate:
+            weight_list[mut_num][mut_pos] = random.randint(1, 9999)
+            print('Mutate : Y')
+        else:
+            print('Mutate : N')
+
+        #write
+        f = open('weightlist.txt', 'w')
+        for i in range(len(weight_list)):
+            print('Com', i + 1, ':', weight_list[i])
+            for j in weight_list[i]:
+                f.write(str(j))
+                f.write(' ')
+            f.write('\n')
+        num += 1
+        f.write(str(num))
+        f.close()
+
+        #next gen?
+        while True:
+            next = input('Move to next generation?(y/n) : ')
+            if next == 'y' or next == 'n':
+                break
+        if next == 'n':
+            break
+
+else:#PvE
+    
+    while True:#depth meter as difficulty
+        depth = int(input("난이도를 선택해 주세요 (1~4) : "))
+        if type(depth) == int and 1<= depth <= 4:
+            break
+    random.shuffle(weight_list)
+    board = chess.Board()
+    k = 1
+    print(board)
+
+    while True:
+        if not board.is_checkmate():
+            print('Turn', k, ': WHITE')
+            while True:
+                legal_list = list(board.legal_moves)
+                choice = input("Your turn : ")
+                if chess.Move.from_uci(choice) in legal_list:
+                    break
+                else:
+                    print('invalid input')
+            board.push(chess.Move.from_uci(choice))
+            print(board)
+            print()
+
+        else:
+            print("Computer Win")
+            break
+
+        if not board.is_checkmate():
+            ab = alpha_beta(depth, -99999, 99999, True, weight_list[0], time_limit/2)
+            board.push(ab[1])
+            print('Turn', k, ': BLACK')
+            print(board)
+            print()
+
+        else:
+            print("You Win")
+            break
+
+        if board.is_variant_draw():
+            print('draw.')
+            break
+        k += 1
+
+
 os.system('pause')
